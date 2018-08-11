@@ -4,12 +4,11 @@ import org.apache.catalina.Session;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.valves.ValveBase;
+import org.apache.juli.logging.Log;
+import org.apache.juli.logging.LogFactory;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
-
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
 
 
 public class RedisSessionHandlerValve extends ValveBase {
@@ -25,7 +24,12 @@ public class RedisSessionHandlerValve extends ValveBase {
     try {
       getNext().invoke(request, response);
     } finally {
-      final Session session = request.getSessionInternal(false);
+      String thirdPartSession=request.getParameter("thirdPartSession");
+      Session sessionThird=request.getSessionInternal(false);
+      if(thirdPartSession!=null&&thirdPartSession.length()>0){
+        sessionThird=manager.findSession(thirdPartSession);
+      }
+      final Session session = sessionThird;
       storeOrRemoveSession(session);
       manager.afterRequest();
     }
